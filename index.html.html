@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>셀프인지모니터링 · 교사용</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F7F9;
+    --surface: #FFFFFF;
+    --border: #E4E7EC;
+    --text-primary: #111318;
+    --text-secondary: #4B5563;
+    --text-muted: #9CA3AF;
+    --accent: #00ac00;
+    --accent-light: #E8F8E8;
+    --accent-dark: #008800;
+    --warm: #E07B2A;
+    --warm-light: #FEF3E7;
+    --score-0: #F3F4F6;
+    --score-0-text: #9CA3AF;
+    --score-1-bg: #E8F8E8;
+    --score-1-text: #006600;
+    --score-2-bg: #00ac00;
+    --score-2-text: #FFFFFF;
+    --danger: #DC2626;
+    --danger-light: #FEF2F2;
+    --radius: 10px;
+    --shadow: 0 1px 6px rgba(0,0,0,0.06);
+    --shadow-lg: 0 6px 28px rgba(0,0,0,0.09);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; font-size: 14px; line-height: 1.65; }
+
+  /* Header */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 30px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
+  .header-title { font-size: 17px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.02em; }
+  .header-title span { color: var(--accent); }
+  .header-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .header-meta { display: flex; gap: 8px; align-items: center; }
+
+  /* Buttons */
+  .btn { padding: 7px 16px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s ease; font-family: 'Noto Sans KR', sans-serif; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 3px 12px rgba(0,172,0,0.3); }
+  .btn-secondary { background: var(--surface); color: var(--text-primary); border: 1.5px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-warn { background: var(--text-primary); color: white; }
+  .btn-warn:hover { background: #2d3748; }
+  .btn-ghost { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border); }
+  .btn-ghost:hover { color: var(--text-secondary); border-color: #9CA3AF; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 26px 22px; }
+
+  /* Student card */
+  .student-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 26px; margin-bottom: 22px; box-shadow: var(--shadow); display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+  .field-label { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .field-input { border: 1.5px solid var(--border); border-radius: 7px; padding: 7px 11px; font-size: 14px; font-family: 'Noto Sans KR', sans-serif; color: var(--text-primary); background: var(--bg); transition: border-color 0.15s; }
+  .field-input:focus { outline: none; border-color: var(--accent); background: white; }
+
+  /* Section title */
+  .section-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 14px; display: flex; align-items: center; gap: 7px; letter-spacing: -0.01em; }
+  .section-title::before { content: ''; width: 3px; height: 16px; background: var(--accent); border-radius: 2px; }
+
+  /* Score table */
+  .score-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); margin-bottom: 22px; }
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table th { padding: 12px 16px; font-size: 12px; font-weight: 600; color: var(--text-secondary); background: #FAFBFC; border-bottom: 1px solid var(--border); text-align: center; }
+  .score-table th.axis-header { text-align: left; width: 155px; }
+  .score-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); text-align: center; }
+  .score-table tr:last-child td { border-bottom: none; }
+  .score-table tr:hover td { background: #FAFBFC; }
+  .axis-label { display: flex; flex-direction: column; text-align: left; }
+  .axis-name { font-weight: 600; color: var(--text-primary); font-size: 13px; }
+  .axis-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  /* Score buttons */
+  .score-btn-group { display: flex; gap: 5px; justify-content: center; }
+  .score-btn { width: 36px; height: 36px; border-radius: 7px; border: 1.5px solid var(--border); background: var(--score-0); color: var(--score-0-text); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.13s ease; display: flex; align-items: center; justify-content: center; font-family: 'Noto Sans KR', sans-serif; }
+  .score-btn:hover { border-color: var(--accent); transform: scale(1.06); }
+  .score-btn.active-0 { background: var(--score-0); border-color: #9CA3AF; color: var(--score-0-text); box-shadow: 0 0 0 2px rgba(156,163,175,0.2); }
+  .score-btn.active-1 { background: var(--score-1-bg); border-color: #009000; color: var(--score-1-text); box-shadow: 0 0 0 2px rgba(0,172,0,0.15); }
+  .score-btn.active-2 { background: var(--score-2-bg); border-color: var(--accent-dark); color: var(--score-2-text); box-shadow: 0 0 0 2px rgba(0,172,0,0.3); }
+
+  /* Tabs */
+  .tab-wrap { display: flex; border-bottom: 1.5px solid var(--border); margin-bottom: 22px; }
+  .tab-btn { padding: 9px 20px; font-size: 13px; font-weight: 500; color: var(--text-muted); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; transition: color 0.13s, border-color 0.13s; font-family: 'Noto Sans KR', sans-serif; }
+  .tab-btn.active { color: var(--text-primary); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Analysis */
+  .analysis-panel { display: none; animation: fadeUp 0.28s ease forwards; }
+  .analysis-panel.visible { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+  .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
+
+  /* Summary card — accent background only here */
+  .summary-card { background: var(--accent); border-radius: var(--radius); padding: 20px 26px; margin-bottom: 20px; position: relative; overflow: hidden; }
+  .summary-card::after { content:''; position:absolute; top:-24px; right:-24px; width:110px; height:110px; border-radius:50%; background:rgba(255,255,255,0.08); }
+  .summary-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; color: rgba(255,255,255,0.6); margin-bottom: 7px; text-transform: uppercase; }
+  .summary-text { font-size: 15px; color: white; line-height: 1.75; font-weight: 600; position: relative; z-index: 1; }
+
+  /* Axis rows */
+  .axis-result-row { border: 1px solid var(--border); border-radius: 9px; padding: 13px 15px; margin-bottom: 9px; background: var(--surface); }
+  .axis-result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+  .axis-result-name { font-weight: 600; font-size: 14px; color: var(--text-primary); }
+  .axis-badges { display: flex; gap: 4px; }
+  .badge { padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-strong { background: var(--accent-light); color: var(--accent-dark); }
+  .badge-developing { background: #FEF3E7; color: #B45309; }
+  .badge-support { background: var(--danger-light); color: var(--danger); }
+  .badge-stable { background: #F3F4F6; color: var(--text-secondary); }
+  .badge-variable { background: #FEF3E7; color: #B45309; }
+
+  .axis-auto-text { font-size: 13px; color: var(--text-secondary); line-height: 1.7; padding: 8px 11px; background: var(--bg); border-radius: 7px; margin-bottom: 8px; border-left: 2.5px solid var(--accent); }
+  .teacher-input { width: 100%; padding: 7px 11px; border: 1.5px dashed var(--border); border-radius: 7px; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; color: var(--text-primary); background: transparent; resize: none; min-height: 40px; transition: border-color 0.13s, background 0.13s; }
+  .teacher-input:focus { outline: none; border-color: var(--warm); background: var(--warm-light); border-style: solid; }
+  .teacher-input::placeholder { color: var(--text-muted); font-size: 12px; }
+
+  /* Radar */
+  .radar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; margin-bottom: 20px; width: 100%; min-width: 0; }
+  .radar-card { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 13px 8px 12px; text-align: center; box-shadow: var(--shadow); min-width: 0; overflow: hidden; }
+  .radar-card svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+  .radar-card-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 7px; }
+  .radar-type-tags { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin-top: 7px; }
+  .type-tag { background: #1A1A1A; color: #FFFFFF; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+
+  .analysis-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); }
+  .analysis-card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 13px; }
+  .mini-bar-wrap { padding: 1px 0; }
+  .mini-bar-row { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
+  .mini-bar-label { width: 66px; font-size: 11px; color: var(--text-secondary); text-align: right; flex-shrink: 0; }
+  .mini-bar-track { flex: 1; height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .mini-bar-fill { height: 100%; border-radius: 4px; transition: width 0.45s ease; }
+  .mini-bar-val { font-size: 11px; font-weight: 600; color: var(--text-secondary); width: 26px; }
+
+  /* ── Parent & Brain edit tab ── */
+  .edit-section-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); margin-bottom: 20px; }
+  .edit-section-header { padding: 16px 22px; border-bottom: 1px solid var(--border); }
+  .edit-section-header h3 { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .edit-section-header p { font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.55; }
+  .edit-section-header.green-tint { background: var(--accent-light); }
+  .edit-section-header.warm-tint { background: var(--warm-light); }
+  .edit-section-header.blue-tint { background: #EFF6FF; }
+  .edit-section-header h3.green { color: var(--accent-dark); }
+  .edit-section-header h3.warm { color: var(--warm); }
+  .edit-section-header h3.blue { color: #1D4ED8; }
+
+  .axis-edit-section { border-bottom: 1px solid var(--border); }
+  .axis-edit-section:last-child { border-bottom: none; }
+  .axis-edit-toggle { width: 100%; background: none; border: none; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: background 0.13s; }
+  .axis-edit-toggle:hover { background: #FAFBFC; }
+  .axis-edit-name { font-weight: 600; font-size: 13px; color: var(--text-primary); display: flex; align-items: center; gap: 7px; }
+  .axis-edit-name span { font-size: 11px; font-weight: 400; color: var(--text-muted); }
+  .axis-edit-chevron { font-size: 10px; color: var(--text-muted); transition: transform 0.18s; }
+  .axis-edit-chevron.open { transform: rotate(180deg); }
+  .axis-edit-content { display: none; padding: 16px 22px 20px; background: #FAFBFC; border-top: 1px solid var(--border); }
+  .axis-edit-content.open { display: block; }
+
+  .level-row { margin-bottom: 13px; }
+  .level-row:last-child { margin-bottom: 0; }
+  .level-label { font-size: 11px; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; color: var(--text-secondary); }
+  .level-badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .lb-strong { background: var(--accent-light); color: var(--accent-dark); }
+  .lb-developing { background: #FEF3E7; color: #B45309; }
+  .lb-support { background: var(--danger-light); color: var(--danger); }
+
+  .sentence-input { width: 100%; padding: 9px 13px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; color: var(--text-primary); background: white; resize: vertical; min-height: 62px; transition: border-color 0.13s; line-height: 1.7; }
+  .sentence-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2.5px rgba(0,172,0,0.12); }
+  .sentence-input::placeholder { color: var(--text-muted); font-size: 12px; }
+
+  /* Parent sentences display */
+  .parent-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); margin-bottom: 20px; }
+  .parent-section-header { background: #FAFBFC; padding: 12px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .parent-section-title { font-weight: 600; color: var(--text-secondary); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .parent-section-body { padding: 16px 18px; }
+  .parent-sentence-display { font-size: 13px; color: var(--text-secondary); line-height: 1.8; padding: 8px 12px; background: var(--bg); border-radius: 7px; margin-bottom: 7px; border-left: 2.5px solid var(--accent); }
+
+  /* Report */
+  .report-output { display: none; background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; box-shadow: var(--shadow-lg); max-width: 760px; margin: 0 auto; }
+  .report-output.visible { display: block; animation: fadeUp 0.3s ease; }
+  .report-logo { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 18px; text-transform: uppercase; }
+  .report-main-title { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; letter-spacing: -0.02em; }
+  .report-divider { width: 32px; height: 2.5px; background: var(--accent); border-radius: 2px; margin: 13px 0; }
+
+  /* Brain report block */
+  .brain-block { background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 18px 20px; margin-top: 20px; border-left: 3px solid var(--accent); }
+  .brain-block-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+  .brain-block-text { font-size: 13px; color: var(--text-secondary); line-height: 1.85; }
+
+  .input-complete-bar { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 16px; overflow: hidden; }
+  .input-complete-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.28s ease; width: 0%; }
+
+  @media (max-width: 768px) {
+    .analysis-grid { grid-template-columns: 1fr; }
+    .radar-grid { grid-template-columns: 1fr 1fr; }
+    .student-card { grid-template-columns: 1fr 1fr; }
+    .container { padding: 12px; }
+    .header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+  }
+  @media print {
+    .header, .student-card, .score-table-wrap, .tab-wrap, .no-print { display: none !important; }
+    .report-output { display: block !important; box-shadow: none; border: none; padding: 0; max-width: 100%; }
+    body { background: white; }
+    .tab-content { display: none !important; }
+    #tab-report { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <div class="header-title">셀프인지모니터링 <span>·</span> 교사용</div>
+    <div class="header-subtitle">발달 관찰 분석 리포트 시스템</div>
+  </div>
+  <div class="header-meta">
+    <button class="btn btn-ghost" onclick="resetAll()">초기화</button>
+    <button class="btn btn-secondary" onclick="switchTab('parent-edit')">📝 문장 편집</button>
+    <button class="btn btn-primary" onclick="runAnalysis()">▶ 분석 보기</button>
+    <button class="btn btn-warn" onclick="showReport()">📄 리포트 출력</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="student-card">
+    <div class="field-group">
+      <span class="field-label">아동 이름</span>
+      <input class="field-input" type="text" id="childName" placeholder="홍길동">
+    </div>
+    <div class="field-group">
+      <span class="field-label">생년월일</span>
+      <input class="field-input" type="text" id="childBirth" placeholder="2019-03-15">
+    </div>
+    <div class="field-group">
+      <span class="field-label">관찰 교사</span>
+      <input class="field-input" type="text" id="teacherName" placeholder="이름 입력">
+    </div>
+    <div class="field-group">
+      <span class="field-label">관찰 날짜</span>
+      <input class="field-input" type="date" id="obsDate">
+    </div>
+  </div>
+
+  <div class="tab-wrap">
+    <button class="tab-btn active" onclick="switchTab('input')">① 점수 입력</button>
+    <button class="tab-btn" onclick="switchTab('parent-edit')">② 문장 편집</button>
+    <button class="tab-btn" onclick="switchTab('analysis')">③ 분석 결과</button>
+    <button class="tab-btn" onclick="switchTab('report')">④ 최종 리포트</button>
+  </div>
+
+  <!-- ① 점수 입력 -->
+  <div class="tab-content active" id="tab-input">
+    <div class="input-complete-bar"><div class="input-complete-fill" id="progressBar"></div></div>
+    <div class="score-table-wrap">
+      <table class="score-table">
+        <thead>
+          <tr>
+            <th class="axis-header">발달축</th>
+            <th>놀이설계<br><span style="font-size:10px;color:var(--text-muted);font-weight:400">계획 · 구성</span></th>
+            <th>놀이실행<br><span style="font-size:10px;color:var(--text-muted);font-weight:400">참여 · 행동</span></th>
+            <th>결과관찰<br><span style="font-size:10px;color:var(--text-muted);font-weight:400">인식 · 평가</span></th>
+            <th>감정일지<br><span style="font-size:10px;color:var(--text-muted);font-weight:400">정서 · 기록</span></th>
+          </tr>
+        </thead>
+        <tbody id="scoreBody"></tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:14px;align-items:center;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:9px;font-size:12px;color:var(--text-muted);">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div style="display:flex;gap:4px;">
+          <div style="width:26px;height:26px;border-radius:6px;background:var(--score-0);border:1.5px solid #9CA3AF;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:var(--score-0-text);">0</div>
+          <div style="width:26px;height:26px;border-radius:6px;background:var(--score-1-bg);border:1.5px solid #009000;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:var(--score-1-text);">1</div>
+          <div style="width:26px;height:26px;border-radius:6px;background:var(--score-2-bg);border:1.5px solid var(--accent-dark);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:var(--score-2-text);">2</div>
+        </div>
+        <span><strong style="color:var(--text-primary)">0</strong> 거의 없음 &nbsp;·&nbsp; <strong style="color:var(--text-primary)">1</strong> 가끔 &nbsp;·&nbsp; <strong style="color:var(--text-primary)">2</strong> 자주</span>
+      </div>
+      <div style="margin-left:auto;font-weight:600;color:var(--accent);" id="scoreCount">0 / 20 입력됨</div>
+    </div>
+  </div>
+
+  <!-- ② 문장 편집 -->
+  <div class="tab-content" id="tab-parent-edit">
+
+    <!-- 부모 안내 문장 -->
+    <div class="edit-section-wrap">
+      <div class="edit-section-header warm-tint">
+        <h3 class="warm">📬 부모 안내 문장</h3>
+        <p>이번 관찰에 대한 가정 안내 문장을 자유롭게 작성해 주세요. 리포트 ④ 부모 안내 항목에 그대로 반영됩니다.</p>
+      </div>
+      <div style="padding:18px 22px;">
+        <textarea class="sentence-input" id="parentGuideText" rows="5"
+          placeholder="예) ○○이는 이번 달 놀이 과정에서 탐색 활동이 활발하게 나타났습니다. 가정에서도 새로운 재료나 도구를 함께 살펴보는 경험을 자주 제공해 주시면 좋겠습니다."
+          oninput="saveParentGuide(this.value)"
+          style="min-height:110px;"></textarea>
+      </div>
+    </div>
+
+    <!-- 이달의 뇌과학 -->
+    <div class="edit-section-wrap">
+      <div class="edit-section-header blue-tint">
+        <h3 class="blue">🧠 이달의 뇌과학 지식 한스푼</h3>
+        <p>리포트 하단에 실릴 뇌과학 내용을 두세 줄로 입력해 주세요.</p>
+      </div>
+      <div style="padding:18px 22px;">
+        <textarea class="sentence-input" id="brainScienceText" rows="3"
+          placeholder="예) 아이가 놀이할 때 전두엽이 활발하게 작동합니다. 놀이를 통한 반복 경험은 뇌의 신경 연결을 강화하고 자기조절 능력 발달에 도움을 줍니다."
+          oninput="saveBrainScience(this.value)"
+          style="min-height:76px;"></textarea>
+      </div>
+    </div>
+
+    <div style="padding:0 0 16px;text-align:right;">
+      <button class="btn btn-primary" onclick="runAnalysis()">▶ 작성 완료 · 분석 보기</button>
+    </div>
+  </div>
+
+  <!-- ③ 분석 결과 -->
+  <div class="tab-content" id="tab-analysis">
+    <div class="analysis-panel" id="analysisPanel">
+      <div class="summary-card">
+        <div class="summary-label">한줄 요약</div>
+        <div class="summary-text" id="summaryText">—</div>
+      </div>
+      <div class="analysis-grid">
+        <div>
+          <div class="section-title">발달축 분석</div>
+          <div id="axisResultRows"></div>
+        </div>
+        <div>
+          <div class="analysis-card">
+            <div class="analysis-card-title">발달축 평균 점수</div>
+            <div class="mini-bar-wrap" id="miniBarChart"></div>
+          </div>
+        </div>
+      </div>
+      <div class="section-title">단계별 발달축 분포</div>
+      <div class="radar-grid" id="radarGrid"></div>
+      <div class="parent-section">
+        <div class="parent-section-header">
+          <span class="parent-section-title">부모 안내 문장</span>
+          <button class="btn btn-secondary" style="padding:4px 11px;font-size:12px;" onclick="switchTab('parent-edit')">✏️ 편집</button>
+        </div>
+        <div class="parent-section-body" id="parentSentences"></div>
+      </div>
+    </div>
+    <div id="analysisEmpty" style="text-align:center;padding:56px 20px;color:var(--text-muted);">
+      <div style="font-size:36px;margin-bottom:10px;">📋</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:5px;">점수를 입력하고 분석을 실행하세요</div>
+      <div style="font-size:12px;">상단의 <strong>▶ 분석 보기</strong> 버튼을 눌러주세요</div>
+    </div>
+  </div>
+
+  <!-- ④ 최종 리포트 -->
+  <div class="tab-content" id="tab-report">
+    <div id="reportEmpty" style="text-align:center;padding:56px 20px;color:var(--text-muted);">
+      <div style="font-size:36px;margin-bottom:10px;">📄</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:5px;">분석 후 리포트를 생성하세요</div>
+      <div style="font-size:12px;"><strong>📄 리포트 출력</strong> 버튼을 눌러주세요</div>
+    </div>
+    <div class="report-output" id="reportOutput">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px;" class="no-print-hide">
+        <div class="report-logo">셀프인지모니터링 · 교사용 관찰 리포트</div>
+        <button onclick="window.print()" style="padding:6px 14px;border-radius:7px;background:#1A1A1A;color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:5px;flex-shrink:0;" class="no-print">🖨 인쇄 / PDF 저장</button>
+      </div>
+      <div class="report-main-title" id="rptTitle">관찰 리포트</div>
+      <div style="font-size:12px;color:var(--text-muted);" id="rptMeta"></div>
+      <div class="report-divider"></div>
+
+      <div style="margin-bottom:20px;">
+        <div class="section-title">① 한줄 요약</div>
+        <div style="font-size:14px;font-weight:600;line-height:1.8;color:var(--text-primary);background:var(--accent-light);padding:13px 16px;border-radius:8px;border-left:3px solid var(--accent);" id="rptSummary"></div>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <div class="section-title">② 발달축 분석</div>
+        <div id="rptAxes"></div>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <div class="section-title">③ 단계별 특징</div>
+        <div id="rptStages"></div>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <div class="section-title">④ 부모 안내</div>
+        <div id="rptParent"></div>
+      </div>
+
+      <div id="rptBrainSection"></div>
+
+      <div style="margin-top:40px;padding-top:18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
+        <div style="text-align:center;">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:22px;">관찰 교사 서명</div>
+          <div style="border-bottom:1px solid var(--text-primary);width:110px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const STAGES = ['놀이설계', '놀이실행', '결과관찰', '감정일지'];
+const AXES = [
+  { key: 'explore',  name: '탐색활동성', desc: '새로운 것을 찾고 시도하는 성향', type: '탐색형',    short: '탐색' },
+  { key: 'regulate', name: '자기조절',   desc: '충동 조절 및 계획 실행 능력',   type: '조절형',    short: '조절' },
+  { key: 'social',   name: '사회성',     desc: '타인과의 상호작용 및 협력',     type: '관계형',    short: '관계' },
+  { key: 'careful',  name: '신중성',     desc: '상황을 살피고 조심스럽게 행동', type: '신중형',    short: '신중' },
+  { key: 'emotion',  name: '정서민감성', desc: '감정 인식 및 공감 능력',        type: '감정주도형', short: '감정' },
+];
+const LEVELS = ['강점', '발달중', '지원필요'];
+
+let scores = {};
+STAGES.forEach(s => { scores[s] = {}; AXES.forEach(a => { scores[s][a.key] = null; }); });
+let teacherComments = {};
+AXES.forEach(a => { teacherComments[a.key] = ''; });
+let parentGuideText = '';
+let brainScienceText = '';
+let analysisResult = null;
+
+document.getElementById('obsDate').value = new Date().toISOString().slice(0, 10);
+
+// ── Score Table ──
+function buildTable() {
+  const tbody = document.getElementById('scoreBody');
+  tbody.innerHTML = '';
+  AXES.forEach(ax => {
+    const tr = document.createElement('tr');
+    let html = `<td><div class="axis-label"><span class="axis-name">${ax.name}</span><span class="axis-desc">${ax.desc}</span></div></td>`;
+    STAGES.forEach(st => {
+      html += `<td><div class="score-btn-group">${[0,1,2].map(v =>
+        `<button class="score-btn" onclick="setScore('${st}','${ax.key}',${v})" id="btn_${st}_${ax.key}_${v}">${v}</button>`
+      ).join('')}</div></td>`;
+    });
+    tr.innerHTML = html;
+    tbody.appendChild(tr);
+  });
+}
+
+function setScore(stage, axisKey, val) {
+  scores[stage][axisKey] = val;
+  STAGES.forEach(st => AXES.forEach(ax => [0,1,2].forEach(v => {
+    const btn = document.getElementById(`btn_${st}_${ax.key}_${v}`);
+    if (btn) { btn.className = 'score-btn'; if (scores[st][ax.key] === v) btn.classList.add(`active-${v}`); }
+  })));
+  updateProgress();
+}
+
+function updateProgress() {
+  let filled = 0;
+  STAGES.forEach(st => AXES.forEach(ax => { if (scores[st][ax.key] !== null) filled++; }));
+  document.getElementById('progressBar').style.width = (filled / 20 * 100) + '%';
+  document.getElementById('scoreCount').textContent = `${filled} / 20 입력됨`;
+}
+
+// ── Edit Tab restore ──
+function restoreEditTab() {
+  document.getElementById('parentGuideText').value = parentGuideText;
+  document.getElementById('brainScienceText').value = brainScienceText;
+}
+
+function saveParentGuide(val) { parentGuideText = val; }
+function saveBrainScience(val) { brainScienceText = val; }
+
+// ── Analysis Engine ──
+function analyze() {
+  const axisStats = {};
+  AXES.forEach(ax => {
+    const vals = STAGES.map(st => scores[st][ax.key] ?? 0);
+    const mean = vals.reduce((a,b)=>a+b,0) / vals.length;
+    const variance = vals.reduce((a,b)=>a+Math.pow(b-mean,2),0) / vals.length;
+    axisStats[ax.key] = {
+      mean: mean.toFixed(2), variance: variance.toFixed(2),
+      level: mean>=1.6?'강점':mean>=0.8?'발달중':'지원필요',
+      stability: variance<=0.4?'안정적':'변동형',
+      vals
+    };
+  });
+  const stageTypes = {};
+  STAGES.forEach(st => {
+    const sorted = AXES.map(ax=>({ax,val:scores[st][ax.key]??0})).sort((a,b)=>b.val-a.val);
+    const top = sorted.filter(x=>x.val>=1).slice(0,2);
+    stageTypes[st] = top.length ? top.map(x=>x.ax.type) : ['미분류'];
+  });
+  const sorted = AXES.map(ax=>({ax,mean:parseFloat(axisStats[ax.key].mean)})).sort((a,b)=>b.mean-a.mean);
+  return { axisStats, stageTypes,
+    topAxes: sorted.slice(0,2).filter(x=>x.mean>=0.8),
+    bottomAxes: sorted.slice(-2).filter(x=>x.mean<0.8) };
+}
+
+// ── Pentagon SVG ──
+function drawRadar(svgEl, values) {
+  const W=150,H=150,cx=W/2,cy=H/2+2,R=52,n=5;
+  const labels=['탐색','조절','사회','신중','감정'];
+  function pt(i,r){const a=(Math.PI*2*i/n)-Math.PI/2;return{x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)};}
+  let svg='';
+  [0.33,0.67,1].forEach(f=>{
+    const pts=Array.from({length:n},(_,i)=>pt(i,R*f)).map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    svg+=`<polygon points="${pts}" fill="${f===1?'rgba(243,244,246,0.7)':'none'}" stroke="#E4E7EC" stroke-width="${f===1?1.5:0.8}"/>`;
+  });
+  for(let i=0;i<n;i++){const p=pt(i,R);svg+=`<line x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="#D1D5DB" stroke-width="0.9"/>`;}
+  const dataPts=values.map((v,i)=>pt(i,R*Math.min(Math.max(v,0)/2,1)));
+  svg+=`<polygon points="${dataPts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}" fill="#00ac00" fill-opacity="0.15" stroke="#00ac00" stroke-width="1.8" stroke-linejoin="round"/>`;
+  dataPts.forEach(p=>{svg+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="#00ac00" stroke="white" stroke-width="1.2"/>`;});
+  for(let i=0;i<n;i++){const p=pt(i,R+16);svg+=`<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="9.5" font-family="'Noto Sans KR',sans-serif" fill="#6B7280" font-weight="600">${labels[i]}</text>`;}
+  values.forEach((v,i)=>{if(v>0){const p=dataPts[i];svg+=`<text x="${(p.x+0.5).toFixed(1)}" y="${(p.y-7).toFixed(1)}" text-anchor="middle" font-size="8" font-family="'Noto Sans KR',sans-serif" fill="#008800" font-weight="700">${v}</text>`;}});
+  svgEl.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svgEl.setAttribute('width','100%');
+  svgEl.setAttribute('height','auto');
+  svgEl.style.maxWidth = W+'px';
+  svgEl.innerHTML=svg;
+}
+
+// ── Sentences ──
+function genAxisSentence(ax, stat) {
+  const lp = {
+    '강점':    '전반적으로 높게 나타납니다',
+    '발달중':  '발달 중인 단계로, 상황에 따라 표현 방식이 다양합니다',
+    '지원필요':'아직 명확하게 나타나지 않아 지원이 필요한 단계입니다'
+  };
+  const stab = stat.stability==='안정적' ? '고르게' : '상황에 따라 변동이 있으며';
+  return `${ax.name}은(는) ${stab} ${lp[stat.level]}`;
+}
+
+function genSummary(result) {
+  const {topAxes,bottomAxes,axisStats}=result;
+  let parts=[];
+  if(topAxes.length) parts.push(`${topAxes.map(x=>x.ax.name).join(', ')} 영역이 활발하게 나타납니다`);
+  if(bottomAxes.length){
+    const stat=axisStats[bottomAxes[0].ax.key];
+    parts.push(`${bottomAxes[0].ax.name}은(는) ${stat.stability==='안정적'?'고르게':'상황에 따라'} 발달 중인 단계입니다`);
+  }
+  return parts.length ? parts.join(', ') : '전반적인 발달 단계를 관찰 중입니다';
+}
+
+// ── Render Analysis ──
+function runAnalysis() {
+  analysisResult = analyze();
+  renderAnalysis(analysisResult);
+  switchTab('analysis');
+  document.getElementById('analysisPanel').classList.add('visible');
+  document.getElementById('analysisEmpty').style.display = 'none';
+}
+
+function renderAnalysis(result) {
+  const {axisStats,stageTypes}=result;
+  document.getElementById('summaryText').textContent = genSummary(result);
+
+  // Axis rows
+  const axisContainer = document.getElementById('axisResultRows');
+  axisContainer.innerHTML = '';
+  AXES.forEach(ax => {
+    const stat = axisStats[ax.key];
+    const lc = stat.level==='강점'?'badge-strong':stat.level==='발달중'?'badge-developing':'badge-support';
+    const sc = stat.stability==='안정적'?'badge-stable':'badge-variable';
+    const div = document.createElement('div');
+    div.className = 'axis-result-row';
+    div.innerHTML = `
+      <div class="axis-result-header">
+        <span class="axis-result-name">${ax.name}</span>
+        <div class="axis-badges">
+          <span class="badge ${lc}">${stat.level}</span>
+          <span class="badge ${sc}">${stat.stability}</span>
+          <span style="padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:var(--bg);color:var(--text-muted);">평균 ${stat.mean}</span>
+        </div>
+      </div>
+      <div class="axis-auto-text">${genAxisSentence(ax,stat)}</div>
+      <textarea class="teacher-input" rows="1" placeholder="✏️ 교사 보완 코멘트..." id="teacherComment_${ax.key}" oninput="saveComment('${ax.key}',this.value)">${teacherComments[ax.key]}</textarea>
+    `;
+    axisContainer.appendChild(div);
+  });
+
+  // Mini bar
+  const barWrap = document.getElementById('miniBarChart');
+  barWrap.innerHTML = '';
+  AXES.forEach(ax => {
+    const stat = axisStats[ax.key];
+    const pct = (parseFloat(stat.mean)/2)*100;
+    const color = stat.level==='강점'?'#00ac00':stat.level==='발달중'?'#E07B2A':'#DC2626';
+    barWrap.innerHTML+=`<div class="mini-bar-row">
+      <span class="mini-bar-label">${ax.short}</span>
+      <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%;background:${color};"></div></div>
+      <span class="mini-bar-val">${stat.mean}</span>
+    </div>`;
+  });
+
+  // Radar per stage
+  const radarGrid = document.getElementById('radarGrid');
+  radarGrid.innerHTML = '';
+  STAGES.forEach(st => {
+    const vals = AXES.map(ax=>scores[st][ax.key]??0);
+    const types = stageTypes[st];
+    const card = document.createElement('div');
+    card.className = 'radar-card';
+    const svgId = `rsv_${st.replace(/[가-힣]/g,c=>c.charCodeAt(0).toString(16))}`;
+    card.innerHTML = `
+      <div class="radar-card-label">${st}</div>
+      <svg id="${svgId}"></svg>
+      <div class="radar-type-tags">${types.map(t=>`<span class="type-tag">${t}</span>`).join('')}</div>
+    `;
+    radarGrid.appendChild(card);
+    requestAnimationFrame(()=>drawRadar(document.getElementById(svgId),vals));
+  });
+
+  renderParentSentences(axisStats);
+}
+
+function renderParentSentences(axisStats) {
+  const container = document.getElementById('parentSentences');
+  const guide = parentGuideText.trim();
+  if (guide) {
+    container.innerHTML = `<div class="parent-sentence-display" style="white-space:pre-wrap;">${guide}</div>`;
+  } else {
+    container.innerHTML = `<div style="text-align:center;padding:16px 0;color:var(--text-muted);font-size:13px;">
+      부모 안내 문장이 아직 작성되지 않았습니다.<br>
+      <button class="btn btn-secondary" style="margin-top:9px;font-size:12px;" onclick="switchTab('parent-edit')">✏️ 지금 작성하기</button>
+    </div>`;
+  }
+}
+
+function saveComment(key, val) { teacherComments[key] = val; }
+
+// ── Report ──
+function showReport() {
+  if (!analysisResult) runAnalysis();
+  const {axisStats,stageTypes}=analysisResult;
+  const name = document.getElementById('childName').value||'아동';
+  const teacher = document.getElementById('teacherName').value||'';
+  const date = document.getElementById('obsDate').value||'';
+
+  document.getElementById('rptTitle').textContent = `${name} 관찰 리포트`;
+  document.getElementById('rptMeta').textContent = `관찰 교사: ${teacher}  |  날짜: ${date}`;
+  document.getElementById('rptSummary').textContent = genSummary(analysisResult);
+
+  // ② 발달축 — compact one-line
+  const rptAxes = document.getElementById('rptAxes');
+  rptAxes.innerHTML = '';
+  AXES.forEach(ax => {
+    const stat = axisStats[ax.key];
+    const lc = stat.level==='강점'?'badge-strong':stat.level==='발달중'?'badge-developing':'badge-support';
+    const sc = stat.stability==='안정적'?'badge-stable':'badge-variable';
+    const comment = teacherComments[ax.key];
+    const div = document.createElement('div');
+    div.style.cssText = 'margin-bottom:8px;padding:10px 14px;border:1px solid var(--border);border-radius:9px;';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+        <span style="font-weight:600;font-size:13px;min-width:68px;">${ax.name}</span>
+        <span class="badge ${lc}">${stat.level}</span>
+        <span class="badge ${sc}">${stat.stability}</span>
+        <span style="font-size:11px;color:var(--text-muted);">avg ${stat.mean}</span>
+        <span style="font-size:12px;color:var(--text-secondary);flex:1;">— ${genAxisSentence(ax,stat)}</span>
+      </div>
+      ${comment?`<div style="font-size:12px;color:var(--warm);margin-top:6px;padding:4px 8px;background:var(--warm-light);border-radius:6px;border-left:2px solid var(--warm);">교사 코멘트: ${comment}</div>`:''}
+    `;
+    rptAxes.appendChild(div);
+  });
+
+  // ③ 단계별 — radar grid
+  const rptStages = document.getElementById('rptStages');
+  rptStages.innerHTML = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:11px;width:100%;min-width:0;" id="rptStageGrid"></div>';
+  STAGES.forEach(st => {
+    const types = stageTypes[st];
+    const sid = `rRdr_${st.replace(/[가-힣]/g,c=>c.charCodeAt(0).toString(16))}`;
+    const div = document.createElement('div');
+    div.style.cssText = 'text-align:center;padding:13px 8px;background:var(--bg);border:1px solid var(--border);border-radius:9px;min-width:0;overflow:hidden;';
+    div.innerHTML = `
+      <div style="font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:7px;">${st}</div>
+      <svg id="${sid}" style="max-width:100%;height:auto;display:block;margin:0 auto;"></svg>
+      <div style="margin-top:7px;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;">${types.map(t=>`<span style="display:inline-block;background:#1A1A1A;color:#FFFFFF;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;">${t}</span>`).join('')}</div>
+    `;
+    document.getElementById('rptStageGrid').appendChild(div);
+    requestAnimationFrame(()=>drawRadar(document.getElementById(sid),AXES.map(ax=>scores[st][ax.key]??0)));
+  });
+
+  // ④ 부모 안내
+  const rptParent = document.getElementById('rptParent');
+  const guide = parentGuideText.trim();
+  rptParent.innerHTML = guide
+    ? `<div style="font-size:13px;color:var(--text-secondary);line-height:1.85;padding:12px 16px;background:var(--warm-light);border-radius:8px;border-left:2.5px solid var(--warm);white-space:pre-wrap;">${guide}</div>`
+    : `<div style="color:var(--text-muted);font-size:13px;padding:6px 0;">부모 안내 문장이 아직 작성되지 않았습니다. <strong>② 문장 편집</strong> 탭에서 작성해 주세요.</div>`;
+
+  // 뇌과학
+  const brain = brainScienceText.trim();
+  document.getElementById('rptBrainSection').innerHTML = brain
+    ? `<div class="brain-block"><div class="brain-block-title">🧠 이달의 뇌과학 지식 한스푼</div><div class="brain-block-text">${brain.replace(/\n/g,'<br>')}</div></div>`
+    : '';
+
+  document.getElementById('reportOutput').classList.add('visible');
+  document.getElementById('reportEmpty').style.display = 'none';
+  switchTab('report');
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`tab-${id}`).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`'${id}'`)) b.classList.add('active');
+  });
+}
+
+function resetAll() {
+  if(!confirm('모든 입력값을 초기화하시겠습니까?')) return;
+  STAGES.forEach(s=>AXES.forEach(a=>{scores[s][a.key]=null;}));
+  AXES.forEach(a=>{teacherComments[a.key]='';});
+  parentGuideText=''; brainScienceText='';
+  analysisResult=null;
+  ['analysisPanel','reportOutput'].forEach(id=>document.getElementById(id).classList.remove('visible'));
+  ['analysisEmpty','reportEmpty'].forEach(id=>document.getElementById(id).style.display='');
+  buildTable(); restoreEditTab(); updateProgress(); switchTab('input');
+}
+
+buildTable();
+restoreEditTab();
+updateProgress();
+</script>
+</body>
+</html>
